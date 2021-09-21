@@ -111,7 +111,7 @@ class SignInForm extends StatelessWidget {
                       .read<SignInFormBloc>()
                       .add(const SignInFormEvent.signInWithGooglePressed());
                 },
-                child: Text("SIGN IN WITH GOOGLE"),
+                child: const Text("SIGN IN WITH GOOGLE"),
               )
             ],
           ),

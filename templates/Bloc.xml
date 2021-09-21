@@ -1,0 +1,21 @@
+<templateSet group="Bloc">
+  <template name="ptf" value="part '$fileName$.freezed.dart';" description="Freezed file import" toReformat="false" toShortenFQNames="true">
+    <variable name="fileName" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="DART_TOPLEVEL" value="true" />
+    </context>
+  </template>
+  <template name="funion" value="@freezed&#10;class $eventName$ with _$$$eventName$ {&#10;  const factory $eventName$.$eventAction$() = $eventAction$;&#10;}" description="Freezed Event Union" toReformat="false" toShortenFQNames="true">
+    <variable name="eventName" expression="className()" defaultValue="&quot;EventName&quot;" alwaysStopAt="true" />
+    <variable name="eventAction" expression="dartMethodName()" defaultValue="&quot;eventAction&quot;" alwaysStopAt="true" />
+    <context>
+      <option name="DART_TOPLEVEL" value="true" />
+    </context>
+  </template>
+  <template name="bev" value="(e)async*{}" description="Block event" toReformat="false" toShortenFQNames="true">
+    <context>
+      <option name="DART_STATEMENT" value="true" />
+      <option name="DART_TOPLEVEL" value="true" />
+    </context>
+  </template>
+</templateSet>

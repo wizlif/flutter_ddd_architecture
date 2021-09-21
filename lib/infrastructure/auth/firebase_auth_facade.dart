@@ -1,18 +1,20 @@
 import 'package:dartz/dartz.dart';
 import 'package:ddd/domain/auth/auth_failures.dart';
 import 'package:ddd/domain/auth/i_auth_facade.dart';
+import 'package:ddd/domain/auth/user.dart';
 import 'package:ddd/domain/auth/value_objects.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
-
+import 'firebase_user_mapper.dart';
 
 @LazySingleton(as: IAuthFacade)
 class FirebaseAuthFacade implements IAuthFacade {
-  final FirebaseAuth firebaseAuth;
+  final fb_auth.FirebaseAuth firebaseAuth;
   final GoogleSignIn googleSignIn;
 
-  const FirebaseAuthFacade({required this.firebaseAuth, required this.googleSignIn});
+  const FirebaseAuthFacade(
+      {required this.firebaseAuth, required this.googleSignIn});
 
   @override
   Future<Either<AuthFailure, Unit>> registerWithEmailAndPassword({
@@ -29,7 +31,7 @@ class FirebaseAuthFacade implements IAuthFacade {
       );
 
       return right(unit);
-    } on FirebaseAuthException catch (e) {
+    } on fb_auth.FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
         return left(const AuthFailure.emailAlreadyInUse());
       } else {
@@ -53,7 +55,7 @@ class FirebaseAuthFacade implements IAuthFacade {
       );
 
       return right(unit);
-    } on FirebaseAuthException catch (e) {
+    } on fb_auth.FirebaseAuthException catch (e) {
       if (e.code == "user-not-found" || e.code == "wrong-password") {
         return left(const AuthFailure.invalidEmailAndPassword());
       } else {
@@ -71,7 +73,7 @@ class FirebaseAuthFacade implements IAuthFacade {
       }
 
       final googleAuthentication = await googleUser.authentication;
-      final authCredential = GoogleAuthProvider.credential(
+      final authCredential = fb_auth.GoogleAuthProvider.credential(
         idToken: googleAuthentication.idToken,
         accessToken: googleAuthentication.accessToken,
       );
@@ -79,8 +81,19 @@ class FirebaseAuthFacade implements IAuthFacade {
       return firebaseAuth
           .signInWithCredential(authCredential)
           .then((value) => right(unit));
-    } on FirebaseAuthException catch (_) {
+    } on fb_auth.FirebaseAuthException catch (_) {
       return left(const AuthFailure.serverError());
     }
   }
+
+  @override
+  Future<Option<User>> getSignedInUser() async {
+    return optionOf(firebaseAuth.currentUser?.toDomain());
+  }
+
+  @override
+  Future<void> signOut() => Future.wait([
+        googleSignIn.signOut(),
+        firebaseAuth.signOut(),
+      ]);
 }
